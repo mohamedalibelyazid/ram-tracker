@@ -1,34 +1,28 @@
 import streamlit as st
 from datetime import datetime
-# Assurez-vous que votre fichier s'appelle bien scraper.py
+# Import du scraper (Renommez votre fichier scraping.py en scraper.py si besoin)
 from scraper import get_flight_data
 
-# --- CONFIGURATION DE LA PAGE ---
+# --- CONFIGURATION PAGE ---
 st.set_page_config(
     page_title="Suivi de Vol - Royal Air Maroc",
     page_icon="🇲🇦",
     layout="centered"
 )
 
-# --- CSS PERSONNALISÉ (CORRECTIFS & THEME RAM) ---
+# --- CSS PERSONNALISÉ (DESIGN EXACT) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap');
 
-    /* 1. FORCER LE MODE CLAIR (Evite le blanc sur blanc) */
-    html, body, [class*="css"] {
-        font-family: 'Montserrat', sans-serif;
-        color: #333333; /* Couleur de texte par défaut forcée en gris foncé */
-    }
-
+    /* Fond général */
     .stApp {
         background-color: #f4f6f9;
     }
 
-    /* 2. CORRECTION DU SPINNER (Texte de chargement) */
-    .stSpinner > div > div {
-        color: #C2002F !important; /* Texte du spinner en Rouge RAM */
-        font-weight: 600;
+    html, body, [class*="css"] {
+        font-family: 'Montserrat', sans-serif;
+        color: #333;
     }
 
     /* HEADER PAGE */
@@ -39,119 +33,137 @@ st.markdown("""
         border-bottom: 3px solid #C2002F;
     }
 
-    /* BOUTONS */
+    /* BOUTON RECHERCHE */
     div.stButton > button:first-child {
         background-color: #C2002F;
         color: white;
         border-radius: 50px;
-        border: none;
         font-weight: 700;
         text-transform: uppercase;
         padding: 12px 30px;
         width: 100%;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(194, 0, 47, 0.2);
+        border: none;
+        box-shadow: 0 4px 10px rgba(194, 0, 47, 0.2);
+        transition: all 0.3s;
     }
     div.stButton > button:first-child:hover {
         background-color: #960024;
-        transform: translateY(-2px);
+        transform: scale(1.02);
     }
 
-    /* --- NOUVEAU DESIGN DE LA CARTE DE VOL --- */
+    /* --- CARTE DE VOL --- */
 
-    /* Bloc du haut (Numéro de vol) */
+    /* 1. Bandeau Numéro de Vol (AT200) */
     .flight-header-strip {
-        background-color: white;
-        color: #C2002F;
-        font-size: 2rem;
+        background-color: #ffffff;
+        color: #C2002F; /* Texte Rouge RAM */
+        font-size: 2.2rem;
         font-weight: 800;
         text-align: center;
         padding: 15px;
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
-        border-bottom: 2px solid #f0f0f0;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border-radius: 15px 15px 0 0;
+        border-bottom: 1px solid #eee;
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.03); /* Légère ombre vers le haut */
+        letter-spacing: 1px;
     }
 
-    /* Bloc principal (Contenu) */
+    /* 2. Corps de la carte */
     .flight-card-body {
-        background-color: #ffffff; /* Fond blanc comme sur le site RAM */
+        background-color: #ffffff;
         padding: 30px;
-        border-bottom-left-radius: 20px;
-        border-bottom-right-radius: 20px;
+        border-radius: 0 0 15px 15px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         margin-bottom: 20px;
     }
 
-    /* Aéroports (Style très gros) */
+    /* Aéroports */
     .airport-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
     }
     .airport-block {
         text-align: center;
         width: 40%;
     }
     .airport-code {
-        font-size: 3.5rem; /* Très gros */
+        font-size: 3rem;
         font-weight: 800;
         color: #222;
         line-height: 1;
+        margin-bottom: 5px;
     }
-    .airport-city {
-        font-size: 0.9rem;
-        color: #666;
-        text-transform: uppercase;
-        margin-top: 5px;
+    .airport-label {
+        font-size: 0.8rem;
+        color: #777;
         font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
-
-    /* Flèche centrale animée */
     .flight-arrow {
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: #C2002F;
         font-weight: bold;
     }
 
-    /* Badges Statut */
+    /* Badge Statut (Pillule) */
     .status-container {
         text-align: center;
-        margin: -15px auto 30px auto;
+        margin-bottom: 35px;
     }
     .status-badge {
-        padding: 8px 25px;
-        border-radius: 30px;
+        padding: 8px 30px;
+        border-radius: 50px;
         font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.9rem;
-        letter-spacing: 1px;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
     }
-    .status-ok { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    .status-late { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    .status-wait { background-color: #e2e6ea; color: #333; border: 1px solid #ccc; }
+    .status-ok { background-color: #fbecec; color: #C2002F; border: 1px solid #fadbd8; } /* Style RAM En route */
+    .status-landed { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .status-late { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
 
-    /* Horaires */
+    /* Horaires - CENTRÉS */
     .time-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        border-top: 1px solid #eee;
-        padding-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 25px;
     }
-    .time-col-left { text-align: left; }
-    .time-col-right { text-align: right; }
+    .time-col {
+        width: 48%;
+        text-align: center; /* CENTRAGE FORCÉ ICI */
+    }
 
-    .time-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;}
-    .time-huge { font-size: 2rem; font-weight: 700; color: #333; }
-    .time-real { font-size: 1rem; color: #e67e22; font-weight: 600; margin-top: 5px;}
-    .delay-alert { color: #C2002F; font-weight: 800; font-size: 0.9rem; }
+    .time-label {
+        font-size: 0.7rem;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+    .time-main {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 5px;
+    }
+
+    /* Textes additionnels (Réel, Retard, À l'heure) */
+    .info-sub {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    .color-green { color: #28a745; }
+    .color-orange { color: #e67e22; }
+    .color-red { color: #C2002F; }
 
     </style>
 """, unsafe_allow_html=True)
 
-# --- HEADER LOGO ---
+# --- LOGO ---
 st.markdown("""
     <div class="ram-header">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Logo_Royal_Air_Maroc.svg/2560px-Logo_Royal_Air_Maroc.svg.png" width="220">
@@ -166,7 +178,7 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     search_btn = st.button("VOIR LE STATUT")
     st.markdown("---")
-    st.caption("Données indicatives AirportInfo.")
+    st.caption("Données AirportInfo.")
 
 # --- LOGIQUE ---
 if search_btn:
@@ -175,8 +187,7 @@ if search_btn:
         code = f"AT{code}"
     date_str = date_vol.strftime("%Y-%m-%d")
 
-    # Spinner avec texte coloré par CSS
-    with st.spinner(f"📡 Connexion satellite pour {code}..."):
+    with st.spinner(f"Connexion au vol {code}..."):
         try:
             data = get_flight_data(code, date_str)
 
@@ -185,102 +196,106 @@ if search_btn:
             elif "Erreur" in data.get("status", ""):
                 st.error(f"⚠️ Erreur: {data['status']}")
             else:
-                # --- LOGIQUE STATUT ---
+                # --- STATUT ---
                 statut = data['status']
-                css_status = "status-wait"
+                css_status = "status-ok"  # Par défaut rouge clair (En route)
                 icon = "✈️"
 
+                # Logique couleur
                 if any(x in statut.lower() for x in ["atterri", "landed", "arrivé"]):
-                    css_status = "status-ok"
+                    css_status = "status-landed"
                     icon = "✅"
                 elif "retard" in statut.lower() or "delayed" in statut.lower():
                     css_status = "status-late"
                     icon = "⚠️"
 
+                # Override si retard détecté > 15min
                 dep_delay = data['departure']['delay_min']
                 if dep_delay and dep_delay > 15:
                     css_status = "status-late"
+                    icon = "⚠️"
 
-                # --- AFFICHAGE DE LA CARTE ---
+                # --- AFFICHAGE CARTE ---
                 with st.container():
-                    # 1. BANDEAU SUPÉRIEUR (Numéro de Vol)
+
+                    # 1. HEADER (AT200 en Rouge sur Blanc)
                     st.markdown(f'<div class="flight-header-strip">{code}</div>', unsafe_allow_html=True)
 
-                    # 2. CORPS DE LA CARTE
+                    # 2. BODY
                     st.markdown('<div class="flight-card-body">', unsafe_allow_html=True)
 
-                    # Ligne Aéroports (CMN -> JFK)
+                    # Aéroports
                     st.markdown(f"""
                         <div class="airport-row">
                             <div class="airport-block">
                                 <div class="airport-code">{data['origin']}</div>
-                                <div class="airport-city">DÉPART</div>
+                                <div class="airport-label">DÉPART</div>
                             </div>
                             <div class="flight-arrow">➝</div>
                             <div class="airport-block">
                                 <div class="airport-code">{data['destination']}</div>
-                                <div class="airport-city">ARRIVÉE</div>
+                                <div class="airport-label">ARRIVÉE</div>
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
 
-                    # Badge Statut Centré
+                    # Pillule Statut
                     st.markdown(f"""
                         <div class="status-container">
                             <span class="status-badge {css_status}">{icon} {statut}</span>
                         </div>
                     """, unsafe_allow_html=True)
 
-                    # Grille Horaires
+                    # Grille Horaires (CENTRÉE)
                     col1, col2 = st.columns(2)
 
+                    # DÉPART (Gauche)
                     with col1:
-                        # DÉPART
                         st.markdown(f"""
-                            <div style="text-align:left; border-right: 1px solid #eee;">
-                                <div class="time-label">Heure de départ</div>
-                                <div class="time-huge">{data['departure']['planned']}</div>
+                            <div style="text-align:center;">
+                                <div class="time-label">HEURE DE DÉPART</div>
+                                <div class="time-main">{data['departure']['planned']}</div>
                         """, unsafe_allow_html=True)
 
                         act = data['departure']['actual']
                         dly = data['departure']['delay_min']
 
                         if dly and dly > 0:
-                            st.markdown(f'<div class="time-real">Réel : {act}</div>', unsafe_allow_html=True)
-                            st.markdown(f'<div class="delay-alert">Retard : +{dly} min</div>', unsafe_allow_html=True)
-                        else:
-                            st.markdown(
-                                '<div style="color:#28a745; font-size:0.9rem; margin-top:5px;">À l\'heure</div>',
-                                unsafe_allow_html=True)
+                            st.markdown(f'<div class="info-sub color-orange">Réel : {act}</div>',
+                                        unsafe_allow_html=True)
+                            st.markdown(f'<div class="info-sub color-red">Retard : +{dly} min</div>',
+                                        unsafe_allow_html=True)
+                        elif act != "N/A":
+                            st.markdown('<div class="info-sub color-green">À l\'heure</div>', unsafe_allow_html=True)
 
                         st.markdown("</div>", unsafe_allow_html=True)
 
+                    # ARRIVÉE (Droite)
                     with col2:
-                        # ARRIVÉE
                         st.markdown(f"""
-                            <div style="text-align:right;">
-                                <div class="time-label">Heure d'arrivée</div>
-                                <div class="time-huge">{data['arrival']['planned']}</div>
+                            <div style="text-align:center;">
+                                <div class="time-label">HEURE D'ARRIVÉE</div>
+                                <div class="time-main">{data['arrival']['planned']}</div>
                         """, unsafe_allow_html=True)
 
                         act_arr = data['arrival']['actual']
                         dly_arr = data['arrival']['delay_min']
 
                         if dly_arr and dly_arr > 0:
-                            st.markdown(f'<div class="time-real">Estimé : {act_arr}</div>', unsafe_allow_html=True)
-                            st.markdown(f'<div class="delay-alert">Retard : +{dly_arr} min</div>',
+                            st.markdown(f'<div class="info-sub color-orange">Estimé : {act_arr}</div>',
                                         unsafe_allow_html=True)
-                        else:
-                            st.markdown(
-                                '<div style="color:#28a745; font-size:0.9rem; margin-top:5px;">À l\'heure</div>',
-                                unsafe_allow_html=True)
+                            st.markdown(f'<div class="info-sub color-red">Retard : +{dly_arr} min</div>',
+                                        unsafe_allow_html=True)
+                        elif act_arr != "N/A":
+                            # C'EST ICI QUE CA SERA MAINTENANT PARFAITEMENT CENTRÉ
+                            st.markdown('<div class="info-sub color-green">À l\'heure</div>', unsafe_allow_html=True)
 
                         st.markdown("</div>", unsafe_allow_html=True)
 
-                    st.markdown('</div>', unsafe_allow_html=True)  # Fin body
+                    st.markdown('</div>', unsafe_allow_html=True)  # Fin Body
 
         except Exception as e:
             st.error(f"Erreur: {e}")
 
 else:
-    st.info("Entrez un numéro de vol pour commencer.")
+    st.info("Entrez un numéro de vol (ex: AT200) pour commencer.")
