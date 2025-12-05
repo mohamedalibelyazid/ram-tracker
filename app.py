@@ -154,7 +154,7 @@ st.markdown("""
 # --- HEADER LOGO ---
 st.markdown("""
     <div class="ram-header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Royal_Air_Maroc_logo.svg/800px-Royal_Air_Maroc_logo.svg.png" width="220">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Logo_Royal_Air_Maroc.svg/2560px-Logo_Royal_Air_Maroc.svg.png" width="220">
     </div>
 """, unsafe_allow_html=True)
 
