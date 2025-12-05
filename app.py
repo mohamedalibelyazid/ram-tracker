@@ -110,7 +110,7 @@ st.markdown("""
 # Utilisation du logo Wikimedia officiel
 st.markdown("""
     <div class="ram-header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Royal_Air_Maroc_logo.svg/800px-Royal_Air_Maroc_logo.svg.png" width="200">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Logo_Royal_Air_Maroc.svg/2560px-Logo_Royal_Air_Maroc.svg.png" width="200">
         <h3 style="margin-top:10px; color:#555;">Suivi de Vol en Temps Réel</h3>
     </div>
 """, unsafe_allow_html=True)
