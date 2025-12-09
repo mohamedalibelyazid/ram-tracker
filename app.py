@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime
-import textwrap  # Permet de nettoyer l'indentation HTML
+# Assurez-vous d'avoir votre fichier scraper.py dans le même dossier
 from scraper import get_flight_data
 
 # --- CONFIGURATION PAGE ---
@@ -10,192 +10,174 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- CSS (DESIGN ET CORRECTIFS) ---
+# --- CSS CORRIGÉ (DESIGN ET CORRECTIFS) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Montserrat', sans-serif;
+        color: #333;
     }
 
-    /* Force le fond de l'app en gris clair */
+    /* Fond de l'application */
     .stApp {
         background-color: #F4F6F9;
     }
 
-    /* --- SIDEBAR SOMBRE (Comme sur votre image) --- */
+    /* --- SIDEBAR (FOND ROUGE FONCÉ) --- */
     section[data-testid="stSidebar"] {
-        background-color: #1E1E24; /* Gris très foncé / Noir */
+        background-color: #8A0021;
     }
-
-    /* Texte sidebar en blanc */
-    section[data-testid="stSidebar"] .stMarkdown h1, 
-    section[data-testid="stSidebar"] .stMarkdown h2, 
-    section[data-testid="stSidebar"] .stMarkdown h3, 
-    section[data-testid="stSidebar"] p, 
-    section[data-testid="stSidebar"] label {
+    section[data-testid="stSidebar"] * {
+        color: white;
+    }
+    section[data-testid="stSidebar"] input {
         color: #ffffff !important;
     }
-
-    /* Inputs sidebar (Fond sombre) */
     section[data-testid="stSidebar"] .stTextInput input, 
     section[data-testid="stSidebar"] .stDateInput input {
-        background-color: #2B2D35 !important; 
-        color: white !important;
-        border: 1px solid #444 !important;
+        background-color: #1a1a1a !important; 
+        border: 1px solid #b03045 !important;
         border-radius: 8px;
     }
+    section[data-testid="stSidebar"] [data-testid="stDateInput"] svg {
+        fill: white !important;
+    }
 
-    /* BOUTON ROUGE RAM */
-    div.stButton > button:first-child {
-        background-color: #C2002F !important;
-        color: white !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        padding: 12px 20px !important;
+    /* BOUTON RECHERCHE */
+    section[data-testid="stSidebar"] .stButton button,
+    section[data-testid="stSidebar"] .stButton button p {
+        background-color: #FFFFFF !important;
+        color: #8A0021 !important;
+        font-weight: 800 !important;
         border: none !important;
-        width: 100%;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        text-transform: uppercase;
     }
-    div.stButton > button:first-child:hover {
-        background-color: #A00026 !important;
-        transform: translateY(-2px);
+    section[data-testid="stSidebar"] .stButton button:hover {
+        background-color: #f0f0f0 !important;
+        transform: scale(1.02);
     }
 
-    /* --- CARTE DE VOL (Design Blanc pur) --- */
+    /* --- CARTE DE RÉSULTAT --- */
     .flight-card {
-        background-color: #ffffff;
-        border-radius: 20px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        background-color: #ffffff; /* Fond blanc forcé */
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         overflow: hidden;
         margin-top: 20px;
-        border-top: 8px solid #C2002F;
-        color: #333333; /* Force le texte en noir */
+        border-top: 6px solid #C2002F;
+        padding-bottom: 20px;
     }
 
+    /* En-tête de la carte (AT200 + Date) */
     .card-header-strip {
         background-color: #fff;
-        padding: 20px 30px;
-        border-bottom: 1px solid #f0f0f0;
-        text-align: center;
-    }
-
-    .flight-num-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #C2002F;
-        margin: 0;
-        line-height: 1.2;
-    }
-
-    .card-body {
-        padding: 30px 40px;
-    }
-
-    /* Aéroports (Ligne CMN -> JFK) */
-    .route-container {
-        display: flex;
-        justify-content: space-between;
+        padding: 15px 25px;
+        display: flex; 
+        justify-content: space-between; 
         align-items: center;
-        margin-bottom: 40px;
+        border-bottom: 1px solid #f0f0f0;
     }
-    .airport-group {
-        text-align: center;
-        flex: 1;
+    .flight-num-big { 
+        font-size: 1.8rem; 
+        font-weight: 800; 
+        color: #C2002F; 
+        letter-spacing: 1px; 
     }
-    .airport-code {
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: #111;
-        line-height: 1;
-    }
-    .airport-label {
-        font-size: 0.85rem;
-        color: #666;
+    .flight-date-small {
+        color: #888;
         font-weight: 600;
-        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+
+    .card-body { 
+        padding: 20px 30px; 
+    }
+
+    /* Alignement aéroports (CMN -> JFK) */
+    .route-flex { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 30px; 
+        margin-top: 10px;
+    }
+    .airport-block {
+        text-align: center;
+        min-width: 80px;
+    }
+    .airport-code { 
+        font-size: 3rem; 
+        font-weight: 800; 
+        color: #222; 
+        line-height: 1; 
+    }
+    .airport-label { 
+        font-size: 0.85rem; 
+        color: #777; 
+        font-weight: 600;
+        text-transform: uppercase; 
         margin-top: 5px;
-        letter-spacing: 1px;
     }
     .plane-icon {
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: #C2002F;
-        flex: 0.5;
-        text-align: center;
     }
 
-    /* Badge Statut */
-    .status-wrapper {
-        display: flex;
-        justify-content: center;
+    /* Badge central */
+    .status-container {
+        text-align: center;
         margin-bottom: 40px;
     }
-    .status-pill {
-        padding: 10px 30px;
-        border-radius: 50px;
-        font-weight: 700;
+    .status-badge { 
+        display: inline-block; 
+        padding: 10px 30px; 
+        border-radius: 50px; 
+        font-weight: 700; 
         font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        text-transform: uppercase; 
+        letter-spacing: 1px;
     }
-    /* Couleurs Badges */
-    .bg-green { background-color: #E6F4EA; color: #1E8E3E; border: 1px solid #CEEAD6; }
-    .bg-red { background-color: #FCE8E6; color: #C5221F; border: 1px solid #FAD2CF; }
-    .bg-grey { background-color: #F1F3F4; color: #5F6368; border: 1px solid #E0E0E0; }
+    .status-green { background-color: #DEF7EC; color: #03543F; border: 1px solid #bcf0da; }
+    .status-red { background-color: #FDE8E8; color: #9B1C1C; border: 1px solid #fbd5d5; }
 
-    /* Grille Horaires (Flexbox pour Centrage parfait) */
-    .times-container {
-        display: flex;
-        justify-content: space-between;
-        padding-top: 20px;
-        border-top: 1px solid #f5f5f5;
+    /* Grille Horaires (FLEXBOX pour centrage parfait) */
+    .times-flex { 
+        display: flex; 
+        justify-content: space-around; /* Espace égal autour */
+        align-items: flex-start;
+        border-top: 1px solid #eee; 
+        padding-top: 25px; 
     }
 
-    .time-col {
+    .time-column {
         display: flex;
         flex-direction: column;
-        align-items: center; /* C'est ICI que ça centre tout verticalement */
-        width: 48%;
+        align-items: center; /* Centrage horizontal des textes */
+        width: 45%;
     }
 
-    .time-title {
-        font-size: 0.75rem;
-        color: #999;
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 1px;
-        margin-bottom: 5px;
-    }
-    .time-value {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #222;
-        margin-bottom: 5px;
-    }
-    .time-sub {
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
-    .text-ok { color: #28a745; }
-    .text-late { color: #dc3545; }
-    .text-warn { color: #e67e22; }
+    .time-big { font-size: 2rem; font-weight: 700; color: #222; margin: 5px 0; }
+    .time-label { font-size: 0.75rem; color: #999; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;}
+
+    .text-red { color: #DC2626; font-size: 0.9rem; font-weight: 700; margin-top: 5px; }
+    .text-green { color: #28a745; font-size: 0.9rem; font-weight: 700; margin-top: 5px; }
 
     </style>
 """, unsafe_allow_html=True)
 
 # --- LOGO EN HAUT ---
 st.markdown("""
-    <div style="text-align: center; margin-bottom: 20px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Royal_Air_Maroc_logo.svg/800px-Royal_Air_Maroc_logo.svg.png" width="220" alt="Logo RAM">
+    <div style="text-align: center; padding-bottom: 20px; margin-bottom: 20px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Logo_Royal_Air_Maroc.svg/2560px-Logo_Royal_Air_Maroc.svg.png" width="220" alt="Logo RAM">
     </div>
 """, unsafe_allow_html=True)
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.markdown("## ✈️ RECHERCHE")
-    st.markdown("Suivez votre vol en temps réel.")
+    st.markdown("## ✈️ MON VOL")
+    st.markdown("Recherchez le statut de votre vol.")
 
     # Inputs
     flight_number_input = st.text_input("N° de Vol", value="AT200", placeholder="Ex: AT200")
@@ -203,11 +185,12 @@ with st.sidebar:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Bouton
-    search_btn = st.button("VOIR LE STATUT")
+    # BOUTON RECHERCHE
+    search_btn = st.button("RECHERCHER LE VOL")
 
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
-    st.caption("© Royal Air Maroc 2025 (Unofficial)")
+    st.markdown(
+        "<br><br><div style='font-size: 0.7em; opacity: 0.7; text-align:center'>© Royal Air Maroc 2025<br>Application Client</div>",
+        unsafe_allow_html=True)
 
 # --- LOGIQUE ---
 if search_btn:
@@ -216,99 +199,89 @@ if search_btn:
         code = f"AT{code}"
     date_str = date_vol.strftime("%Y-%m-%d")
 
-    with st.spinner('Interrogation satellite en cours...'):
+    with st.spinner('Connexion aux serveurs RAM...'):
         try:
             data = get_flight_data(code, date_str)
 
             if "Vol non trouvé" in data.get("status", ""):
-                st.error("❌ Vol introuvable. Vérifiez le numéro et la date.")
+                st.error("❌ Vol introuvable. Vérifiez le numéro.")
             elif "Erreur" in data.get("status", ""):
-                st.error(f"⚠️ Erreur technique : {data['status']}")
+                st.error(f"⚠️ Erreur: {data['status']}")
             else:
-                # --- PRÉPARATION DES DONNÉES ---
-
-                # Statut global
-                statut_raw = data['status'].upper()
-                css_status = "bg-green"
+                # Préparation variables
+                statut_txt = data['status'].upper()
+                css_badge = "status-green"
                 icon = "✅"
 
-                if any(x in statut_raw for x in ["RETARD", "DELAY", "CANCEL"]):
-                    css_status = "bg-red"
+                if "RETARD" in statut_txt or "DELAYED" in statut_txt:
+                    css_badge = "status-red"
                     icon = "⚠️"
-                elif any(x in statut_raw for x in ["PRÉVU", "SCHEDULED"]):
-                    css_status = "bg-grey"
-                    icon = "🕒"
 
-                # Override si retard > 15min
+                # Gestion Retard > 15min
                 dep_delay = data['departure']['delay_min']
                 if dep_delay and dep_delay > 15:
-                    css_status = "bg-red"
+                    css_badge = "status-red"
                     icon = "⚠️"
-                    statut_raw = f"RETARD (+{dep_delay}min)"
+                    statut_txt = f"RETARDÉ (+{dep_delay}min)"
 
 
-                # Sous-titres (Retard/À l'heure)
-                def get_sub_html(delay, actual):
+                # Helpers HTML
+                def get_delay_html(delay, actual):
                     if delay and delay > 0:
-                        return f'<div class="time-sub text-late">Estimé: {actual} (+{delay}m)</div>'
-                    elif actual != "N/A":
-                        return '<div class="time-sub text-ok">À l\'heure</div>'
-                    return ''
+                        return f'<div class="text-red">Estimé: {actual} (+{delay}m)</div>'
+                    return '<div class="text-green">À l\'heure</div>'
 
 
-                sub_dep = get_sub_html(data['departure']['delay_min'], data['departure']['actual'])
-                sub_arr = get_sub_html(data['arrival']['delay_min'], data['arrival']['actual'])
+                sub_dep = get_delay_html(data['departure']['delay_min'], data['departure']['actual'])
+                sub_arr = get_delay_html(data['arrival']['delay_min'], data['arrival']['actual'])
 
-                # --- GÉNÉRATION HTML (SANS INDENTATION POUR CORRIGER LE BUG) ---
-                # Nous utilisons textwrap.dedent pour supprimer l'indentation Python
-                # afin que Streamlit ne pense pas que c'est un bloc de code.
+                # HTML FINAL (SANS INDENTATION pour éviter le bug d'affichage code)
+                html_content = f"""
+<div class="flight-card">
+    <div class="card-header-strip">
+        <div class="flight-num-big">{code}</div>
+        <div class="flight-date-small">{date_vol.strftime('%d %B %Y')}</div>
+    </div>
 
-                html_code = textwrap.dedent(f"""
-                    <div class="flight-card">
-                        <div class="card-header-strip">
-                            <h1 class="flight-num-title">{code}</h1>
-                        </div>
+    <div class="card-body">
 
-                        <div class="card-body">
+        <div class="route-flex">
+            <div class="airport-block" style="text-align:left;">
+                <div class="airport-code">{data['origin']}</div>
+                <div class="airport-label">DÉPART</div>
+            </div>
+            <div class="plane-icon">✈</div>
+            <div class="airport-block" style="text-align:right;">
+                <div class="airport-code">{data['destination']}</div>
+                <div class="airport-label">ARRIVÉE</div>
+            </div>
+        </div>
 
-                            <div class="route-container">
-                                <div class="airport-group">
-                                    <div class="airport-code">{data['origin']}</div>
-                                    <div class="airport-label">DÉPART</div>
-                                </div>
-                                <div class="plane-icon">✈</div>
-                                <div class="airport-group">
-                                    <div class="airport-code">{data['destination']}</div>
-                                    <div class="airport-label">ARRIVÉE</div>
-                                </div>
-                            </div>
+        <div class="status-container">
+            <span class="status-badge {css_badge}">
+                {icon} {statut_txt}
+            </span>
+        </div>
 
-                            <div class="status-wrapper">
-                                <span class="status-pill {css_status}">
-                                    {icon} {statut_raw}
-                                </span>
-                            </div>
+        <div class="times-flex">
+            <div class="time-column">
+                <div class="time-label">HEURE DE DÉPART</div>
+                <div class="time-big">{data['departure']['planned']}</div>
+                {sub_dep}
+            </div>
+            <div class="time-column">
+                <div class="time-label">HEURE D'ARRIVÉE</div>
+                <div class="time-big">{data['arrival']['planned']}</div>
+                {sub_arr}
+            </div>
+        </div>
 
-                            <div class="times-container">
-                                <div class="time-col">
-                                    <div class="time-title">HEURE DE DÉPART</div>
-                                    <div class="time-value">{data['departure']['planned']}</div>
-                                    {sub_dep}
-                                </div>
-                                <div class="time-col">
-                                    <div class="time-title">HEURE D'ARRIVÉE</div>
-                                    <div class="time-value">{data['arrival']['planned']}</div>
-                                    {sub_arr}
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                """)
-
-                st.markdown(html_code, unsafe_allow_html=True)
+    </div>
+</div>
+"""
+                st.markdown(html_content, unsafe_allow_html=True)
 
         except Exception as e:
-            st.error(f"Une erreur est survenue : {e}")
+            st.error(f"Erreur technique : {e}")
 else:
-    st.info("👋 Utilisez le menu à gauche pour chercher un vol.")
+    st.info("👋 Entrez un numéro de vol dans le menu rouge à gauche.")
