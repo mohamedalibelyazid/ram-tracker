@@ -160,6 +160,31 @@ st.markdown("""
     .color-orange { color: #e67e22; }
     .color-red { color: #C2002F; }
 
+    /* --- SIDEBAR --- */
+    section[data-testid="stSidebar"] {
+        background-color: #C2002F !important;
+    }
+
+    section[data-testid="stSidebar"] * {
+        color: white !important;
+    }
+
+    section[data-testid="stSidebar"] .stTextInput input, section[data-testid="stSidebar"] .stDateInput input {
+        border: 2px solid #960024;
+        border-radius: 5px;
+        color: #333 !important; /* Keep text inside input dark */
+    }
+
+    section[data-testid="stSidebar"] .stButton button {
+        background-color: white !important;
+        color: #C2002F !important;
+        border: 1px solid #C2002F;
+    }
+    
+    section[data-testid="stSidebar"] .stButton button:hover {
+        background-color: #f0f0f0 !important;
+    }
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -172,13 +197,13 @@ st.markdown("""
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.header("✈️ Recherche")
+    st.header("✈️ Recherche de vol")
     flight_number = st.text_input("Numéro de Vol", value="AT200")
     date_vol = st.date_input("Date de départ", datetime.now())
     st.markdown("<br>", unsafe_allow_html=True)
     search_btn = st.button("VOIR LE STATUT")
     st.markdown("---")
-    st.caption("Données AirportInfo.")
+    st.caption("© 2025 Royal Air Maroc. Tous les droits réservés")
 
 # --- LOGIQUE ---
 if search_btn:
