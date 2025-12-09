@@ -10,58 +10,48 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- CSS CORRECTIF (DESIGN DARK & CONTRASTE) ---
+# --- CSS CORRIGÉ (LE BOUTON EST RÉPARÉ ICI) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
 
-    /* Global Font */
     html, body, [class*="css"] {
         font-family: 'Montserrat', sans-serif;
     }
 
-    /* Fond principal de l'app (Zone de droite) */
+    /* Fond principal de l'app */
     .stApp {
         background-color: #F4F6F9;
         color: #333;
     }
 
-    /* --- SIDEBAR STYLE (Rouge Très Foncé / Bordeaux) --- */
+    /* --- SIDEBAR (FOND ROUGE FONCÉ) --- */
     section[data-testid="stSidebar"] {
-        background-color: #6d071a; /* Rouge très foncé pour le fond */
+        background-color: #8A0021; /* Rouge Bordeaux */
     }
 
-    /* Couleur des textes génériques dans la sidebar (Titres, labels) */
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3, 
-    section[data-testid="stSidebar"] label, 
-    section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] div,
-    section[data-testid="stSidebar"] span {
-        color: #FFFFFF !important;
+    /* Textes sidebar en BLANC */
+    section[data-testid="stSidebar"] * {
+        color: white; /* Par défaut tout est blanc */
     }
 
-    /* --- CHAMPS DE SAISIE (INPUTS) --- */
-    /* Fond NOIR, Texte BLANC */
+    /* --- INPUTS (TEXTE BLANC SUR FOND NOIR) --- */
     section[data-testid="stSidebar"] .stTextInput input, 
     section[data-testid="stSidebar"] .stDateInput input {
-        background-color: #000000 !important; /* Fond noir strict */
-        color: #FFFFFF !important; /* Texte blanc */
-        border: 1px solid #8e2b3e !important; /* Bordure discrète */
+        background-color: #1a1a1a !important; /* Fond presque noir */
+        color: #ffffff !important;            /* Texte saisi en blanc */
+        border: 1px solid #b03045 !important;
         border-radius: 8px;
     }
 
-    /* Correction de l'icône calendrier (la mettre en blanc) */
     section[data-testid="stSidebar"] [data-testid="stDateInput"] svg {
         fill: white !important;
     }
 
-    /* --- BOUTON DE RECHERCHE --- */
-    /* Fond BLANC, Texte ROUGE FONCÉ */
+    /* --- LE BOUTON (CORRECTION ICI) --- */
     section[data-testid="stSidebar"] .stButton button {
-        background-color: #FFFFFF !important;
-        color: #8A0021 !important; /* C'est ici qu'on corrige le blanc sur blanc */
+        background-color: #FFFFFF !important;  /* Fond BLANC */
+        color: #8A0021 !important;             /* Texte ROUGE FONCÉ (et non blanc !) */
         font-weight: 800 !important;
         border: none !important;
         padding: 15px 20px !important;
@@ -71,13 +61,17 @@ st.markdown("""
         transition: transform 0.2s;
     }
 
+    /* Force la couleur du texte à l'intérieur du bouton (pour être sûr à 100%) */
+    section[data-testid="stSidebar"] .stButton button * {
+        color: #8A0021 !important;
+    }
+
     section[data-testid="stSidebar"] .stButton button:hover {
         transform: scale(1.02);
         background-color: #f0f0f0 !important;
-        color: #C2002F !important; /* Devient rouge plus vif au survol */
     }
 
-    /* --- ESTHÉTIQUE DE LA CARTE DE RÉSULTAT (À DROITE) --- */
+    /* --- CARTE DE RÉSULTAT --- */
     .flight-card {
         background: white;
         border-radius: 16px;
@@ -111,29 +105,28 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- LOGO PRINCIPAL ---
+# --- LOGO ---
 st.markdown("""
     <div style="text-align: center; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 2px solid #E5E7EB;">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Logo_Royal_Air_Maroc.svg/2560px-Logo_Royal_Air_Maroc.svg.png" width="200" alt="Logo RAM">
     </div>
 """, unsafe_allow_html=True)
 
-# --- SIDEBAR CONTENU ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.markdown("## ✈️ MON VOL")
     st.markdown("Recherchez le statut de votre vol en temps réel.")
 
-    # Inputs (Fond Noir / Texte Blanc grâce au CSS)
     flight_number_input = st.text_input("N° de Vol", value="AT200", placeholder="Ex: AT200")
     date_vol = st.date_input("Date de départ", datetime.now())
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Bouton (Fond Blanc / Texte Rouge grâce au CSS)
+    # Bouton de recherche
     search_btn = st.button("RECHERCHER LE VOL")
 
     st.markdown(
-        "<div style='margin-top: 50px; font-size: 0.8em; opacity: 0.7; color: white;'>© Royal Air Maroc 2025<br>Support Client</div>",
+        "<div style='margin-top: 50px; font-size: 0.8em; opacity: 0.7;'>© Royal Air Maroc 2025<br>Support Client</div>",
         unsafe_allow_html=True)
 
 # --- LOGIQUE ---
@@ -143,17 +136,15 @@ if search_btn:
         code = f"AT{code}"
     date_str = date_vol.strftime("%Y-%m-%d")
 
-    with st.spinner('Connexion aux serveurs...'):
+    with st.spinner('Recherche en cours...'):
         try:
             data = get_flight_data(code, date_str)
 
             if "Vol non trouvé" in data.get("status", ""):
-                st.error("❌ Vol introuvable. Vérifiez le numéro et la date.")
+                st.error("❌ Vol introuvable. Vérifiez le numéro.")
             elif "Erreur" in data.get("status", ""):
                 st.error(f"⚠️ Erreur: {data['status']}")
             else:
-                # --- AFFICHAGE CARTE ---
-                # Logique simplifiée pour les couleurs
                 statut_txt = data['status'].upper()
                 css_badge = "status-green"
                 icon = "✅"
@@ -199,6 +190,6 @@ if search_btn:
                 """, unsafe_allow_html=True)
 
         except Exception as e:
-            st.error(f"Erreur technique : {e}")
+            st.error(f"Erreur : {e}")
 else:
-    st.info("Entrez un numéro de vol dans le menu latéral pour commencer.")
+    st.info("👋 Entrez un numéro de vol pour commencer.")
